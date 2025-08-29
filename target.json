@@ -1,10 +1,10 @@
 {
     "include": [
         {
-            "keyboard": "oball49",
+            "keyboard": "lightseeker",
             "keymap": "vial",
             "target": "uf2",
-            "name": "oball49_vial"
+            "name": "lightseeker_vial"
         }
     ]
 }
