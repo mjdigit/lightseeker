@@ -43,6 +43,10 @@
 #endif
 #endif
 
+__attribute__((unused)) enum paw3222_keycodes {
+    DRGSCRL = QK_KB_0, // Set drag scroll mode
+};
+
 typedef struct {
   int16_t x;
   int16_t y;

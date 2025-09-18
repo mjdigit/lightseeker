@@ -17,6 +17,8 @@
 
 // https://github.com/shinoaliceKabocha/choco60_track/tree/master/keymaps/default
 
+#include "quantum.h"
+
 #include "pointing_device.h"
 
 #include "debug.h"
@@ -45,10 +47,26 @@
 typedef union {
     uint32_t raw;
     struct {
-        bool  is_dreagscroll_enabled: 1;
+        bool  is_dragscroll_enabled: 1;
     } __attribute__((packed));
-} lightseeker_config_t;
-static lightseeker_config_t g_lightseeker_config = {0};
+} paw3222_config_t;
+static paw3222_config_t g_paw3222_config = {0};
+
+/**
+    Get the current state of drag scroll mode.
+    @return true if the mode is enabled, false otherwise.
+**/
+static bool get_pointer_dragscroll_enabled(void) {
+    return g_paw3222_config.is_dragscroll_enabled;
+}
+
+/**
+    Enable or disable drag scroll mode.
+    @param [in] enable    true to enable the mode, false to disable it.
+**/
+static void set_pointer_dragscroll_enabled(bool enable) {
+    g_paw3222_config.is_dragscroll_enabled = enable;
+}
 
 // CPI values
 enum cpi_values {
@@ -180,10 +198,20 @@ uint8_t read_pid_paw3222(void) { return paw3222_read_reg(REG_PID1); }
 report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
   report_paw3222_t data = paw3222_read();
   if (data.isMotion) {
-    pd_dprintf("Raw ] X: %d, Y: %d\n", data.x, data.y);
+    if (get_pointer_dragscroll_enabled()) {
+      // Drag scroll movement
+      pd_dprintf("Drag ] X: %d, Y: %d\n", data.x, data.y);
 
-    mouse_report.x = data.x;
-    mouse_report.y = data.y;
+      mouse_report.h = data.x;
+      mouse_report.v = -data.y;
+    } else {
+      // Normal movement
+      // Apply rotation if needed
+      pd_dprintf("Raw ] X: %d, Y: %d\n", data.x, data.y);
+
+      mouse_report.x = data.x;
+      mouse_report.y = data.y;
+    }
   }
 
   return mouse_report;
@@ -199,25 +227,8 @@ uint16_t pointing_device_driver_get_cpi(void) { return paw3222_get_cpi(); }
 
 void pointing_device_driver_set_cpi(uint16_t cpi) { paw3222_set_cpi(cpi); }
 
-
-
-
-/**
-    Enable or disable drag scroll mode.
-    @param [in] enable    true to enable the mode, false to disable it.
-**/
-void set_pointer_dragscroll_enabled(bool enable) {
-    g_lightseeker_config.is_dreagscroll_enabled = enable;
-}
-
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        /**
-        DPI_FOR:
-            break;
-        DPI_REV:
-            break;
-        **/
         DRGSCRL:
             set_pointer_dragscroll_enabled(record->event.pressed);
             break;
@@ -225,8 +236,4 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break; // Process all other keycodes normally
     }
     return true;
-}
-
-report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
-    return mouse_report;
 }

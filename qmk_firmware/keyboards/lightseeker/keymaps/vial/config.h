@@ -1,7 +1,5 @@
 #pragma once
 
-#include "keycodes.h"
-
 #define VIAL_KEYBOARD_UID {0x55, 0x3c, 0x07, 0x75, 0x34, 0xdb, 0xbd, 0xa4}
 #define VIAL_TAP_DANCE_ENTRIES 8
 #define VIAL_COMBO_ENTRIES 8
@@ -11,9 +9,3 @@
 #define POINTING_DEVICE_INVERT_Y
 #define POINTING_DEVICE_ROTATION_90
 #define TAPPING_TERM 100
-
-enum lightseeker_user_keycodes {
-    DPI_FOR = QK_KB_0,
-    DPI_REV,
-    DRGSCRL,
-};
