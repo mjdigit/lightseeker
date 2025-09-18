@@ -229,7 +229,7 @@ void pointing_device_driver_set_cpi(uint16_t cpi) { paw3222_set_cpi(cpi); }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        DRGSCRL:
+        case DRGSCRL:
             set_pointer_dragscroll_enabled(record->event.pressed);
             break;
         default:
