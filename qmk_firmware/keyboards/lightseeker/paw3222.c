@@ -42,6 +42,14 @@
 #define constrain(amt, low, high)                                              \
   ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
+typedef union {
+    uint32_t raw;
+    struct {
+        bool  is_dreagscroll_enabled: 1;
+    } __attribute__((packed));
+} lightseeker_config_t;
+static lightseeker_config_t g_lightseeker_config = {0};
+
 // CPI values
 enum cpi_values {
   CPI400,  // 0b000
@@ -190,3 +198,35 @@ report_mouse_t pointing_device_driver_get_report(report_mouse_t mouse_report) {
 uint16_t pointing_device_driver_get_cpi(void) { return paw3222_get_cpi(); }
 
 void pointing_device_driver_set_cpi(uint16_t cpi) { paw3222_set_cpi(cpi); }
+
+
+
+
+/**
+    Enable or disable drag scroll mode.
+    @param [in] enable    true to enable the mode, false to disable it.
+**/
+void set_pointer_dragscroll_enabled(bool enable) {
+    g_lightseeker_config.is_dreagscroll_enabled = enable;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        /**
+        DPI_FOR:
+            break;
+        DPI_REV:
+            break;
+        **/
+        DRGSCRL:
+            set_pointer_dragscroll_enabled(record->event.pressed);
+            break;
+        default:
+            break; // Process all other keycodes normally
+    }
+    return true;
+}
+
+report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
+    return mouse_report;
+}
