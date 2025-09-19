@@ -44,28 +44,32 @@
 #define constrain(amt, low, high)                                              \
   ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
+#define DRGSCRL_MODE_OFF  0b00
+#define DRGSCRL_MODE_VRT  0b01
+#define DRGSCRL_MODE_HOR  0b10
+#define DRGSCRL_MODE_FRE  0b11
 typedef union {
     uint32_t raw;
     struct {
-        bool  is_dragscroll_enabled: 1;
+        uint8_t  dragscroll_mode: 2; // 00b: off, 01b: vertical, 10b: horizontal, 11b: free
     } __attribute__((packed));
 } paw3222_config_t;
 static paw3222_config_t g_paw3222_config = {0};
 
 /**
     Get the current state of drag scroll mode.
-    @return true if the mode is enabled, false otherwise.
+    @return 00b: off, 01b: vertical, 10b: horizontal, 11b: free
 **/
-static bool get_pointer_dragscroll_enabled(void) {
-    return g_paw3222_config.is_dragscroll_enabled;
+static uint8_t get_pointer_dragscroll_mode(void) {
+    return g_paw3222_config.dragscroll_mode;
 }
 
 /**
-    Enable or disable drag scroll mode.
-    @param [in] enable    true to enable the mode, false to disable it.
+    Set drag scroll mode.
+    @param [in] mode    00b: off, 01b: vertical, 10b: horizontal, 11b: free.
 **/
-static void set_pointer_dragscroll_enabled(bool enable) {
-    g_paw3222_config.is_dragscroll_enabled = enable;
+static void set_pointer_dragscroll_mode(uint8_t mode) {
+    g_paw3222_config.dragscroll_mode = mode & 0b11;
 }
 
 // CPI values
@@ -197,11 +201,13 @@ uint8_t read_pid_paw3222(void) { return paw3222_read_reg(REG_PID1); }
 
 report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
   report_paw3222_t data = paw3222_read();
+  uint8_t dragscroll_mode;
   int16_t datax = 0;
   int16_t datay = 0;
 
   if (data.isMotion) {
-    if (get_pointer_dragscroll_enabled()) {
+    dragscroll_mode = get_pointer_dragscroll_mode();
+    if (dragscroll_mode) {
       // Drag scroll movement
       datax = data.x;
       datay = data.y;
@@ -230,8 +236,8 @@ report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
 #     endif
 
       pd_dprintf("Drag ] H: %d, V: %d\n", datax, datay);
-      mouse_report.h = datax;
-      mouse_report.v = datay;
+      if (dragscroll_mode & DRGSCRL_MODE_HOR) mouse_report.h = datax;
+      if (dragscroll_mode & DRGSCRL_MODE_VRT) mouse_report.v = datay;
     } else {
       // Normal movement
       // Apply rotation if needed
@@ -257,8 +263,14 @@ void pointing_device_driver_set_cpi(uint16_t cpi) { paw3222_set_cpi(cpi); }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case DRGSCRL:
-            set_pointer_dragscroll_enabled(record->event.pressed);
+        case DRGSCRL_V:
+            set_pointer_dragscroll_mode((record->event.pressed)? DRGSCRL_MODE_VRT: DRGSCRL_MODE_OFF);
+            break;
+        case DRGSCRL_H:
+            set_pointer_dragscroll_mode((record->event.pressed)? DRGSCRL_MODE_HOR: DRGSCRL_MODE_OFF);
+            break;
+        case DRGSCRL_F:
+            set_pointer_dragscroll_mode((record->event.pressed)? DRGSCRL_MODE_FRE: DRGSCRL_MODE_OFF);
             break;
         default:
             break; // Process all other keycodes normally

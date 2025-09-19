@@ -6,6 +6,23 @@
         "rows": 4,
         "cols": 13
     },
+    "customKeycodes": [
+        {
+            "title": "Vertical Drag-scroll Momentary",
+            "name": "V-Drag-scroll MO",
+            "shortName": "DrgV"
+        },
+        {
+            "title": "Horizontal Drag-scroll Momentary",
+            "name": "H-Drag-scroll MO",
+            "shortName": "DrgH"
+        },
+        {
+            "title": "Free Drag-scroll Momentary",
+            "name": "Drag-scroll MO",
+            "shortName": "Drg"
+        }
+    ],
     "layouts": {
         "labels": [
             [

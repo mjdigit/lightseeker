@@ -44,7 +44,9 @@
 #endif
 
 enum paw3222_keycodes {
-    DRGSCRL = QK_KB_0, // Set drag scroll mode
+    DRGSCRL_V = QK_KB_0, // Set vertical drag scroll mode
+    DRGSCRL_H,           // Set horizontal drag scroll mode
+    DRGSCRL_F,           // Set free drag scroll mode
 };
 
 typedef struct {
