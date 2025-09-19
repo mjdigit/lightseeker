@@ -7,5 +7,3 @@ POINTING_DEVICE_DRIVER = custom
 SRC += paw3222.c
 
 OS_DETECTION_ENABLE = yes
-
-CFLAGS += -Wno-error=unused-label

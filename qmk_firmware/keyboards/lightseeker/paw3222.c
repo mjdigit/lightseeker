@@ -197,13 +197,41 @@ uint8_t read_pid_paw3222(void) { return paw3222_read_reg(REG_PID1); }
 
 report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
   report_paw3222_t data = paw3222_read();
+  int16_t datax = 0;
+  int16_t datay = 0;
+
   if (data.isMotion) {
     if (get_pointer_dragscroll_enabled()) {
       // Drag scroll movement
-      pd_dprintf("Drag ] X: %d, Y: %d\n", data.x, data.y);
+      datax = data.x;
+      datay = data.y;
 
-      mouse_report.h = data.x;
-      mouse_report.v = -data.y;
+      // Support rotation of the sensor data
+#     if defined(POINTING_DEVICE_ROTATION_90)
+      datax = data.y;
+      datay = -data.x;
+#     elif defined(POINTING_DEVICE_ROTATION_180)
+      datax = -data.x;
+      datay = -data.y;
+#     elif defined(POINTING_DEVICE_ROTATION_270)
+      datax = -data.y;
+      datay = data.x;
+#     else
+      datax = data.x;
+      datay = data.y;
+#     endif
+
+      // Support Inverting the X and Y Axises
+#     if defined(POINTING_DEVICE_INVERT_X)
+      datax = -datax;
+#     endif
+#     if defined POINTING_DEVICE_INVERT_Y
+      datay = -datay;
+#     endif
+
+      pd_dprintf("Drag ] H: %d, V: %d\n", datax, datay);
+      mouse_report.h = datax;
+      mouse_report.v = datay;
     } else {
       // Normal movement
       // Apply rotation if needed
