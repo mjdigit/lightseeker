@@ -236,8 +236,8 @@ report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
 #     endif
 
       pd_dprintf("Drag ] H: %d, V: %d\n", datax, datay);
-      if (dragscroll_mode & DRGSCRL_MODE_HOR) mouse_report.h = datax;
-      if (dragscroll_mode & DRGSCRL_MODE_VRT) mouse_report.v = datay;
+      if (dragscroll_mode & DRGSCRL_MODE_HOR) mouse_report.h = datax / PAW3222_DRGSCRL_REDUCTION_RATIO;
+      if (dragscroll_mode & DRGSCRL_MODE_VRT) mouse_report.v = datay / PAW3222_DRGSCRL_REDUCTION_RATIO;
     } else {
       // Normal movement
       // Apply rotation if needed
