@@ -202,6 +202,8 @@ uint8_t read_pid_paw3222(void) { return paw3222_read_reg(REG_PID1); }
 report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
   report_paw3222_t data = paw3222_read();
   uint8_t dragscroll_mode;
+  static int16_t scroll_buffer_x = 0;
+  static int16_t scroll_buffer_y = 0;
   int16_t datax = 0;
   int16_t datay = 0;
 
@@ -236,20 +238,26 @@ report_mouse_t paw3222_get_report(report_mouse_t mouse_report) {
 #     endif
 
       pd_dprintf("Drag ] H: %d, V: %d\n", datax, datay);
+#     if PAW3222_IS_FREE_SCROLL_SNAPPED
       // Allow either of horizontal or vertical movement
       if ((dragscroll_mode & DRGSCRL_MODE_FRE) == DRGSCRL_MODE_FRE) {
         dragscroll_mode = (datax*datax > datay*datay)? DRGSCRL_MODE_HOR: DRGSCRL_MODE_VRT;
       }
+#     endif
 
       if (dragscroll_mode & DRGSCRL_MODE_HOR) {
-        mouse_report.h = datax / PAW3222_DRGSCRL_REDUCTION_RATIO;
-        //if (datax >= 0) mouse_report.h = (datax - 1 + PAW3222_DRGSCRL_REDUCTION_RATIO) / PAW3222_DRGSCRL_REDUCTION_RATIO;
-        //else            mouse_report.h = (datax + 1 - PAW3222_DRGSCRL_REDUCTION_RATIO) / PAW3222_DRGSCRL_REDUCTION_RATIO;
+        scroll_buffer_x += datax;
+        if (abs(scroll_buffer_x) > PAW3222_DRGSCRL_BUFFER_THRESHOLD) {
+          mouse_report.h = (scroll_buffer_x > 0)? 1: -1;
+          scroll_buffer_x = 0;
+        }
       }
       if (dragscroll_mode & DRGSCRL_MODE_VRT) {
-        mouse_report.v = datay / PAW3222_DRGSCRL_REDUCTION_RATIO;
-        //if (datay >= 0) mouse_report.v = (datay - 1 + PAW3222_DRGSCRL_REDUCTION_RATIO) / PAW3222_DRGSCRL_REDUCTION_RATIO;
-        //else            mouse_report.v = (datay + 1 - PAW3222_DRGSCRL_REDUCTION_RATIO) / PAW3222_DRGSCRL_REDUCTION_RATIO;
+        scroll_buffer_y += datay;
+        if (abs(scroll_buffer_y) > PAW3222_DRGSCRL_BUFFER_THRESHOLD) {
+          mouse_report.v = (scroll_buffer_y > 0)? 1: -1;
+          scroll_buffer_y = 0;
+        }
       }
     } else {
       // Normal movement
