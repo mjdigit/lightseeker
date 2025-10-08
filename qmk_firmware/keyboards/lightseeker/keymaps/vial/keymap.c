@@ -84,6 +84,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 void keyboard_post_init_user(void) {
+#if OS_DETECTION_ENABLE
     wait_ms(400);
 
     switch (detected_host_os()) {
@@ -95,4 +96,5 @@ void keyboard_post_init_user(void) {
         layer_move(0);
         break;
     }
+#endif
 }
