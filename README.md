@@ -55,7 +55,7 @@ Layer3: Numpad
 ![Layer3](images/LightSeeker-default-layer3.png)
 
 ### MacOS/iOS
-自動判定を有効にする場合は、config.hにてOS_DETECTION_ENABLEを1に設定してください。
+自動判定を有効にする場合は、rules.mkにてOS_DETECTION_ENABLEをyesに設定してください。
 
 Layer4: Default Layer
 ![Layer4](images/LightSeeker-default-layer4.png)
